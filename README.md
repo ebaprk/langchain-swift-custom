@@ -6,6 +6,43 @@
 
 This is a pure client library, no server required
 
+
+## About this fork
+
+This repository is `ebaprk/langchain-swift-custom`, a fork of [buhe/langchain-swift](https://github.com/buhe/langchain-swift). It provides the `LangChain` Swift package for language-model integrations, prompt chains, document loading, retrieval, vector stores, and supporting tools. The upstream examples and attribution are retained below.
+
+### Use this repository
+
+The checked-in [Package.swift](Package.swift) requires Swift tools 5.9 and declares iOS 15, macOS 12, watchOS 8, and visionOS 1. Some dependencies and integrations have narrower platform support.
+
+Add this fork’s URL in Xcode’s **Add Package Dependencies**, then select the `LangChain` library product. For a Swift package, use the fork explicitly:
+
+```swift
+.package(url: "https://github.com/ebaprk/langchain-swift-custom.git", branch: "main")
+```
+
+Use a reviewed commit revision for reproducible downstream builds. From a local checkout, the standard package commands are:
+
+```sh
+git clone https://github.com/ebaprk/langchain-swift-custom.git
+cd langchain-swift-custom
+swift package resolve
+swift build
+swift test
+```
+
+Some tests and examples rely on external services, models, or credentials; inspect them before running the complete suite. Configure only the providers you use. Do not embed provider secrets into a distributed mobile app; a trusted backend is needed when end users should not receive those credentials.
+
+### Repository guide
+
+- [Sources/LangChain/](Sources/LangChain/) — chains, model clients, tools, loaders, embeddings, and vector stores.
+- [Tests/LangChainTests/](Tests/LangChainTests/) — package tests and integration examples.
+- [LICENSE](LICENSE) — Apache License 2.0 and existing attribution.
+
+The badge above reports the upstream repository’s workflow, not a build of this fork. Upstream examples can reference different branches, model names, or provider APIs. Treat those as version-specific examples and check compatibility with this checkout. This README does not claim feature parity with current Python LangChain or a recent successful integration test.
+
+## Upstream documentation
+
 ## Setup
 1. Please set up before using this library
 
@@ -50,10 +87,10 @@ BILIBILI_JCT=xxx
 
 <details>
 <summary>🔥 Local Model</summary>
- 
+
 Please use 'local' branch, because of dependency on projects.
 [Model here](https://github.com/guinmoon/LLMFarm/blob/main/models.md)
- 
+
  ```
   .package(url: "https://github.com/buhe/langchain-swift", .branch("local"))
  ```
@@ -74,7 +111,7 @@ Code
 </details>
 <details>
 <summary>💬 Chatbots</summary>
-    
+
 Code
 
 ```swift
@@ -102,7 +139,7 @@ let chatgpt_chain = LLMChain(
 )
 Task(priority: .background)  {
     var input = "I want you to act as a Linux terminal. I will type commands and you will reply with what the terminal should show. I want you to only reply with the terminal output inside one unique code block, and nothing else. Do not write explanations. Do not type commands unless I instruct you to do so. When I need to tell you something in English I will do so by putting text inside curly brackets {like this}. My first command is pwd."
-    
+
     var res = await chatgpt_chain.predict(args: ["human_input": input])
     print(input)
     print("🌈:" + res!)
@@ -126,7 +163,7 @@ Desktop  Documents  Downloads  Music  Pictures  Public  Templates  Videos
 </details>
 <details>
 <summary>❓ QA bot</summary>
-    
+
 An [main/Sources/LangChain/vectorstores/supabase/supabase.sql](https://github.com/buhe/langchain-swift/blob/main/Sources/LangChain/vectorstores/supabase/supabase.sql) is required.
 
 ref: https://supabase.com/docs/guides/database/extensions/pgvector
@@ -146,7 +183,7 @@ Task(priority: .background)  {
             await s.addText(text: doc)
         }
     }
-    
+
     let m = await s.similaritySearch(query: "What did the president say about Ketanji Brown Jackson", k: 1)
     print("Q🖥️:What did the president say about Ketanji Brown Jackson")
     print("A🚀:\(m)")
@@ -161,7 +198,7 @@ A🚀:[LangChain.MatchedModel(content: Optional("In state after state, new laws 
 <details>
 
 <summary>📄 Retriever</summary>
-    
+
 Code
 ```swift
 Task(priority: .background)  {
@@ -196,7 +233,7 @@ read(descriptor:pointer:size:): Connection reset by peer (errno: 54)
 <details>
 
 <summary>🤖 Agent</summary>
-    
+
 Code
 ```swift
 let agent = initialize_agent(llm: OpenAI(), tools: [WeatherTool()])
@@ -215,9 +252,9 @@ Log
 ```
 </details>
 <details>
-    
+
 <summary>📡 Router</summary>
-    
+
 ```swift
 let physics_template = """
 You are a very smart physics professor. \
@@ -237,7 +274,7 @@ answer the component parts, and then put them together to answer the broader que
 Here is a question:
 {input}
 """
-   
+
 let prompt_infos = [
    [
        "name": "physics",
@@ -295,7 +332,7 @@ router text: {
 
 <details>
 <summary>ObjectOutputParser</summary>
-    
+
 ```swift
 let demo = Book(title: "a", content: "b", unit: Unit(num: 1))
 
@@ -333,7 +370,7 @@ Task(priority: .background)  {
     let i = parser.get_format_instructions()
     print("ins: \(i)")
     let t = PromptTemplate(input_variables: ["query"], partial_variable:["format_instructions": parser.get_format_instructions()], template: "Answer the user query.\n{format_instructions}\n{query}\n")
-    
+
     let chain = LLMChain(llm: llm, prompt: t, parser: parser, inputKey: "query")
     Task(priority: .background)  {
         let result = await chain.run(args: "Value is 'value2'")
@@ -355,9 +392,9 @@ Task(priority: .background)  {
 ```swift
 Task(priority: .background)  {
     let eventLoopGroup = MultiThreadedEventLoopGroup(numberOfThreads: 1)
-    
+
     let httpClient = HTTPClient(eventLoopGroupProvider: .shared(eventLoopGroup))
-    
+
     defer {
         // it's important to shutdown the httpClient after all requests are done, even if one failed. See: https://github.com/swift-server/async-http-client
         try? httpClient.syncShutdown()
